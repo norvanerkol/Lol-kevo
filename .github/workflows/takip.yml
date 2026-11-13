@@ -22,8 +22,8 @@ jobs:
         run: python3 check_game.py
         env:
           RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
-          RIOT_ID: ${{ secrets.RIOT_ID }}
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          RIOT_ID: "tiltpr00f35#iwnl"
+          NTFY_TOPIC: "lol-tilt-8172344e"
           PLATFORM: ${{ vars.PLATFORM || 'euw1' }}
           REGION: ${{ vars.REGION || 'europe' }}
 
