@@ -120,5 +120,32 @@ def main():
     save_state(state)
 
 
+def commit_state():
+    import subprocess
+    subprocess.run(["git", "add", STATE_FILE])
+    if subprocess.run(["git", "diff", "--cached", "--quiet"]).returncode != 0:
+        subprocess.run(["git", "commit", "-qm", "durum güncellendi"])
+        subprocess.run(["git", "pull", "-q", "--rebase"])
+        subprocess.run(["git", "push", "-q"])
+
+
 if __name__ == "__main__":
-    main()
+    import time
+    loop_minutes = int(os.environ.get("LOOP_MINUTES", "0"))
+    if loop_minutes <= 0:
+        main()
+    else:
+        end = time.time() + loop_minutes * 60
+        while True:
+            try:
+                main()
+                commit_state()
+            except SystemExit as e:
+                print(e)
+                if "anahtar" in str(e):
+                    raise
+            except Exception as e:
+                print(f"Geçici hata: {e}")
+            if time.time() + 120 > end:
+                break
+            time.sleep(120)

@@ -2,11 +2,12 @@ name: LoL takip
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # her 5 dakikada bir (GitHub bazen birkaç dakika geciktirebilir)
-  workflow_dispatch:         # elle test etmek için "Run workflow" butonu
+    - cron: "17 * * * *"     # yedek: döngü durursa saatte bir yeniden başlatır
+  workflow_dispatch:         # elle başlatmak için "Run workflow" butonu
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: lol-takip
@@ -15,10 +16,16 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
 
-      - name: Maç kontrolü
+      - name: Git ayarı
+        run: |
+          git config user.name "lol-takip-bot"
+          git config user.email "lol-takip-bot@users.noreply.github.com"
+
+      - name: Maç kontrolü (2 dakikada bir, ~5.5 saat)
         run: python3 check_game.py
         env:
           RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
@@ -26,10 +33,9 @@ jobs:
           NTFY_TOPIC: "lol-tilt-8172344e"
           PLATFORM: ${{ vars.PLATFORM || 'euw1' }}
           REGION: ${{ vars.REGION || 'europe' }}
+          LOOP_MINUTES: "330"
 
-      - name: Durumu kaydet
-        run: |
-          git config user.name "lol-takip-bot"
-          git config user.email "lol-takip-bot@users.noreply.github.com"
-          git add state.json
-          git diff --cached --quiet || (git commit -m "durum güncellendi" && git push)
+      - name: Kendini yeniden başlat
+        run: gh workflow run takip.yml --ref main -R ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
