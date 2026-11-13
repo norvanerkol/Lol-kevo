@@ -14,10 +14,11 @@ PLATFORM = os.environ.get("PLATFORM", "euw1").strip().lower()   # euw1, tr1, eun
 REGION = os.environ.get("REGION", "europe").strip().lower()     # europe, americas, asia
 NTFY_TOPIC = os.environ["NTFY_TOPIC"].strip()
 STATE_FILE = "state.json"
+UA = {"User-Agent": "LoLGameNotifier/1.0 (personal use)"}
 
 
 def riot_get(url):
-    req = urllib.request.Request(url, headers={"X-Riot-Token": API_KEY})
+    req = urllib.request.Request(url, headers={"X-Riot-Token": API_KEY, **UA})
     try:
         with urllib.request.urlopen(req, timeout=20) as r:
             return json.load(r)
@@ -48,10 +49,10 @@ def save_state(state):
 
 def champion_names():
     try:
-        with urllib.request.urlopen("https://ddragon.leagueoflegends.com/api/versions.json", timeout=20) as r:
+        with urllib.request.urlopen(urllib.request.Request("https://ddragon.leagueoflegends.com/api/versions.json", headers=UA), timeout=20) as r:
             version = json.load(r)[0]
         url = f"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json"
-        with urllib.request.urlopen(url, timeout=20) as r:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as r:
             data = json.load(r)["data"]
         return {int(c["key"]): c["name"] for c in data.values()}
     except Exception:
@@ -65,7 +66,7 @@ def notify(title, message, click=None):
     req = urllib.request.Request(
         "https://ntfy.sh",
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", **UA},
         method="POST",
     )
     urllib.request.urlopen(req, timeout=20).read()
