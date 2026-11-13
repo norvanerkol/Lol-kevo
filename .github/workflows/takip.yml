@@ -1,0 +1,35 @@
+name: LoL takip
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # her 5 dakikada bir (GitHub bazen birkaç dakika geciktirebilir)
+  workflow_dispatch:         # elle test etmek için "Run workflow" butonu
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lol-takip
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Maç kontrolü
+        run: python3 check_game.py
+        env:
+          RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+          RIOT_ID: ${{ secrets.RIOT_ID }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          PLATFORM: ${{ vars.PLATFORM || 'euw1' }}
+          REGION: ${{ vars.REGION || 'europe' }}
+
+      - name: Durumu kaydet
+        run: |
+          git config user.name "lol-takip-bot"
+          git config user.email "lol-takip-bot@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet || (git commit -m "durum güncellendi" && git push)
