@@ -25,6 +25,10 @@ def riot_get(url):
         if e.code == 404:
             return None  # oyunda değil
         if e.code in (401, 403):
+            body = e.read().decode("utf-8", "replace")[:200]
+            print(f"HTTP {e.code} - Riot cevabı: {body}")
+            print(f"Adres: {url.split('?')[0]}")
+            print(f"Anahtar 'RGAPI-' ile başlıyor mu: {API_KEY.startswith('RGAPI-')}, uzunluk: {len(API_KEY)} (normali 42)")
             raise SystemExit("Riot API anahtarı geçersiz veya süresi dolmuş.")
         raise
 
