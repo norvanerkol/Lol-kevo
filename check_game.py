@@ -143,6 +143,11 @@ if __name__ == "__main__":
             except SystemExit as e:
                 print(e)
                 if "anahtar" in str(e):
+                    try:
+                        notify("Riot anahtarı bitti ⚠️", "Takip durdu. Yeni anahtarı GitHub'a ekleyip Run workflow'a bas.",
+                               click="https://developer.riotgames.com")
+                    except Exception:
+                        pass
                     raise
             except Exception as e:
                 print(f"Geçici hata: {e}")
